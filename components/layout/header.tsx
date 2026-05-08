@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,7 +28,10 @@ import {
   LogOut,
   ChefHat,
   Star,
+  Shield,
+  Store,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 const navLinks = [
   { href: "/restaurants", label: "Restaurants" },
@@ -36,12 +40,15 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-interface HeaderProps {
-  isLoggedIn?: boolean;
-}
-
-export function Header({ isLoggedIn = false }: HeaderProps) {
+export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { user, isAuthenticated, logout, hasPermission } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -97,7 +104,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
             <span className="sr-only">Search</span>
           </Button>
 
-          {isLoggedIn ? (
+          {isAuthenticated && user ? (
             <>
               {/* Notifications */}
               <DropdownMenu>
@@ -114,6 +121,10 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                   <div className="p-4">
                     <h4 className="font-semibold mb-2">Notifications</h4>
                     <div className="space-y-3">
+                      <div className="text-sm">
+                        <p className="font-medium">Welcome back, {user.fullName}!</p>
+                        <p className="text-muted-foreground text-xs">Just now</p>
+                      </div>
                       <div className="text-sm">
                         <p className="font-medium">New review on your restaurant</p>
                         <p className="text-muted-foreground text-xs">2 hours ago</p>
@@ -138,8 +149,9 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">Ahmed Khan</p>
-                    <p className="text-xs text-muted-foreground">ahmed@example.com</p>
+                    <p className="text-sm font-medium">{user.fullName}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                    <p className="text-xs text-primary capitalize mt-1">{user.role.replace("_", " ")}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -148,6 +160,22 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
+                  {hasPermission("admin_dashboard") && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin-dashboard">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {hasPermission("restaurant_dashboard") && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/restaurant-dashboard">
+                        <Store className="mr-2 h-4 w-4" />
+                        Restaurant Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link href="/my-reviews">
                       <Star className="mr-2 h-4 w-4" />
@@ -167,7 +195,10 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuItem 
+                    className="text-destructive cursor-pointer"
+                    onClick={handleLogout}
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
@@ -204,7 +235,40 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
                     {link.label}
                   </Link>
                 ))}
-                {!isLoggedIn && (
+                {isAuthenticated && user ? (
+                  <>
+                    <hr className="my-4" />
+                    <Link
+                      href="/dashboard"
+                      className="text-lg font-medium hover:text-primary transition-colors"
+                    >
+                      Dashboard
+                    </Link>
+                    {hasPermission("admin_dashboard") && (
+                      <Link
+                        href="/admin-dashboard"
+                        className="text-lg font-medium hover:text-primary transition-colors"
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    <Link
+                      href="/favorites"
+                      className="text-lg font-medium hover:text-primary transition-colors"
+                    >
+                      Favorites
+                    </Link>
+                    <Link
+                      href="/profile-settings"
+                      className="text-lg font-medium hover:text-primary transition-colors"
+                    >
+                      Settings
+                    </Link>
+                    <Button onClick={handleLogout} variant="destructive" className="mt-2">
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
                   <>
                     <hr className="my-4" />
                     <Link

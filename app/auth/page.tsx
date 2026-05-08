@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -11,35 +11,68 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 function AuthForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { login, isAuthenticated } = useAuth();
   const defaultTab = searchParams.get("tab") === "signup" ? "signup" : "signin";
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
   
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  // Form state
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    router.push(redirectTo);
+  }
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Implement actual auth
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setError(null);
+    setSuccess(null);
+
+    const result = await login(signInEmail, signInPassword);
+
+    if (result.success) {
+      setSuccess("Sign in successful! Redirecting...");
+      setTimeout(() => {
+        router.push(redirectTo);
+      }, 1000);
+    } else {
+      setError(result.error || "Invalid email or password");
+    }
+    
     setIsLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Implement actual auth
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setError(null);
+    setSuccess(null);
+    
+    // For now, show message that sign up will be available when database is connected
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setError("Sign up will be available once the database is connected. Please contact the administrator for access.");
     setIsLoading(false);
   };
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
-    // TODO: Implement Google OAuth
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setError(null);
+    // TODO: Implement Google OAuth when database is connected
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setError("Google authentication will be available once the database is connected.");
     setIsLoading(false);
   };
 
@@ -66,6 +99,22 @@ function AuthForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {success && (
+              <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-primary">{success}</p>
+              </div>
+            )}
+
             <Tabs defaultValue={defaultTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -81,6 +130,8 @@ function AuthForm() {
                       id="signin-email"
                       type="email"
                       placeholder="you@example.com"
+                      value={signInEmail}
+                      onChange={(e) => setSignInEmail(e.target.value)}
                       required
                     />
                   </div>
@@ -100,6 +151,8 @@ function AuthForm() {
                         id="signin-password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
+                        value={signInPassword}
+                        onChange={(e) => setSignInPassword(e.target.value)}
                         required
                       />
                       <Button
