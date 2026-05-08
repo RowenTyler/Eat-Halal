@@ -53,6 +53,7 @@ function AuthForm() {
             alt="Eat Halal"
             width={48}
             height={48}
+            className="h-12 w-auto"
           />
           <span className="font-bold text-2xl">Eat Halal</span>
         </Link>

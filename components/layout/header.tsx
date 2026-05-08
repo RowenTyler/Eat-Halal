@@ -53,7 +53,7 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
             alt="Eat Halal"
             width={40}
             height={40}
-            className="h-10 w-10"
+            className="h-10 w-auto"
           />
           <span className="hidden font-bold text-xl sm:inline-block">
             Eat Halal
