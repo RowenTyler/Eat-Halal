@@ -13,6 +13,8 @@ export interface AuthorizedUser {
   permissions: string[];
   isActive: boolean;
   createdAt: string;
+  reviewCount: number;
+  avatarUrl?: string;
 }
 
 // Authorized users with full sign-in privileges
@@ -40,6 +42,8 @@ export const authorizedUsers: AuthorizedUser[] = [
     ],
     isActive: true,
     createdAt: new Date().toISOString(),
+    reviewCount: 47,
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
   },
   {
     id: "user_002",
@@ -64,6 +68,8 @@ export const authorizedUsers: AuthorizedUser[] = [
     ],
     isActive: true,
     createdAt: new Date().toISOString(),
+    reviewCount: 47,
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
   },
   {
     id: "user_003",
@@ -88,6 +94,8 @@ export const authorizedUsers: AuthorizedUser[] = [
     ],
     isActive: true,
     createdAt: new Date().toISOString(),
+    reviewCount: 47,
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
   },
 ];
 

@@ -8,11 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Sparkles } from "lucide-react";
 
 const popularSearches = [
+  "Cape Malay",
   "Indian",
-  "Pakistani",
-  "Middle Eastern",
-  "Burgers",
-  "Turkish",
+  "Bunny Chow",
+  "Braai",
+  "Gatsbys",
 ];
 
 export function HeroSection() {
@@ -45,7 +45,7 @@ export function HeroSection() {
             className="mb-4 gap-1.5 px-3 py-1.5 text-sm"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            Discover 2,500+ Halal Restaurants
+            Discover 2,500+ Halaal Restaurants in South Africa
           </Badge>
 
           {/* Headline */}
@@ -59,8 +59,8 @@ export function HeroSection() {
 
           {/* Subheadline */}
           <p className="mt-6 text-lg text-muted-foreground md:text-xl">
-            Discover verified halal restaurants, read authentic reviews, and
-            explore delicious halal dining experiences in your area.
+            Discover SANHA and MJC certified halaal restaurants across South Africa.
+            Read authentic reviews and explore delicious halaal dining from Cape Town to Johannesburg.
           </p>
 
           {/* Search Form */}

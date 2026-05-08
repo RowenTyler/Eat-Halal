@@ -86,7 +86,7 @@ export function RestaurantCard({ restaurant, variant = "default" }: RestaurantCa
             </div>
           </div>
           <span className="text-sm font-medium text-muted-foreground">
-            {restaurant.priceRange}
+            {restaurant.priceRange.replace(/R/g, "R")}
           </span>
         </div>
 
