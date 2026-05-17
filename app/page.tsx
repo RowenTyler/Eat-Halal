@@ -1,4 +1,4 @@
-import { Header } from "@/components/layout/header";
+import Header from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { HeroSection } from "@/components/home/hero-section";
 import { QuickFilters } from "@/components/home/quick-filters";

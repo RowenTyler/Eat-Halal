@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
+import Header from "@/components/layout/header";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";

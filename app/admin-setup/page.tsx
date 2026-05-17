@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
+import Header from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

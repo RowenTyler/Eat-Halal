@@ -1,306 +1,362 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
+import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  Menu,
-  Search,
-  Bell,
-  User,
-  Heart,
-  Settings,
-  LogOut,
-  ChefHat,
-  Star,
-  Shield,
-  Store,
-} from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
+  DropdownMenuSeparator 
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { User, LogOut, Settings, Shield, Menu, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-const navLinks = [
-  { href: "/restaurants", label: "Restaurants" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
+interface UserProfile {
+  full_name: string;
+  avatar_url: string;
+}
 
-export function Header() {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { user, isAuthenticated, logout, hasPermission } = useAuth();
+const Header = () => {
+  const { user, logout } = useAuth();
   const router = useRouter();
+  const isMobile = useIsMobile();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    router.push("/");
+  useEffect(() => {
+    if (user) {
+      checkAdminStatus();
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  // Close mobile menu when screen size changes
+  useEffect(() => {
+    if (!isMobile && mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+  }, [isMobile, mobileMenuOpen]);
+
+  const checkAdminStatus = async () => {
+    setIsAdmin(user?.role === 'admin');
   };
 
+  const fetchUserProfile = async () => {
+    setUserProfile({
+      full_name: user?.fullName || '',
+      avatar_url: user?.avatarUrl || ''
+    });
+  };
+
+  const handleSignOut = async () => {
+    try {
+      logout();
+      router.push('/');
+      toast.success('Signed out successfully');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
+    }
+  };
+
+  const getUserDisplayName = () => {
+    if (userProfile?.full_name) {
+      return userProfile.full_name;
+    }
+    return user?.email || 'User';
+  };
+
+  const getUserInitials = () => {
+    if (userProfile?.full_name) {
+      return userProfile.full_name.charAt(0).toUpperCase();
+    }
+    return user?.email?.charAt(0).toUpperCase() || 'U';
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  const navigationItems = [
+    { to: "/restaurants", label: "Discover Restaurants" },
+    { to: "/add-restaurant", label: "Add Restaurant" },
+    { to: "/claim-restaurant-search", label: "Claim Restaurant" },
+    { to: "/pricing", label: "Pricing" },
+    { to: "/about", label: "About" },
+    { to: "/contact", label: "Contact" }
+  ];
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/images/logo.png"
-            alt="Eat Halal"
-            width={40}
-            height={40}
-            className="h-10 w-auto"
-          />
-          <span className="hidden font-bold text-xl sm:inline-block">
-            Eat Halal
-          </span>
-        </Link>
+    <>
+      <header className="bg-white shadow-sm border-b relative z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Mobile Layout */}
+            {isMobile ? (
+              <>
+                {/* Burger Menu */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMobileMenu}
+                  className="p-2"
+                >
+                  {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                </Button>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+                {/* Centered Logo */}
+                <Link href="/" className="text-2xl font-bold text-green-600 absolute left-1/2 transform -translate-x-1/2">
+                  Eat Halaal
+                </Link>
 
-        {/* Search Bar - Desktop */}
-        <div className="hidden lg:flex items-center gap-2 flex-1 max-w-sm mx-6">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search restaurants..."
-              className="pl-10"
-            />
+                {/* Right Side - Login/User */}
+                <div className="flex items-center">
+                  {user ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={userProfile?.avatar_url} alt={getUserDisplayName()} />
+                            <AvatarFallback className="bg-green-100 text-green-700 text-xs">
+                              {getUserInitials()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <div className="flex items-center justify-start gap-2 p-2">
+                          <div className="flex flex-col space-y-1 leading-none">
+                            <p className="font-medium text-sm">{getUserDisplayName()}</p>
+                            <p className="text-xs text-gray-500">{user.email}</p>
+                            {isAdmin && (
+                              <p className="text-xs text-green-600 font-medium">Administrator</p>
+                            )}
+                          </div>
+                        </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard" className="cursor-pointer">
+                            <User className="mr-2 h-4 w-4" />
+                            <span>Dashboard</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/profile-settings" className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>Profile Settings</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        {isAdmin && (
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin-dashboard" className="cursor-pointer">
+                              <Shield className="mr-2 h-4 w-4" />
+                              <span>Admin Dashboard</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem asChild>
+                          <Link href="/restaurant-dashboard" className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>Restaurant Dashboard</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Sign out</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <Link href="/auth">
+                      <Button size="sm">Login</Button>
+                    </Link>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Desktop Layout */}
+                <div className="flex items-center">
+                  <Link href="/" className="text-2xl font-bold text-green-600">
+                    Eat Halaal
+                  </Link>
+                </div>
+
+                <nav className="hidden md:flex space-x-8">
+                  {navigationItems.map((item) => (
+                    <Link 
+                      key={item.to}
+                      href={item.to}
+                      className="text-gray-700 hover:text-green-600 transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+
+                <div className="flex items-center space-x-4">
+                  {user ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={userProfile?.avatar_url} alt={getUserDisplayName()} />
+                            <AvatarFallback className="bg-green-100 text-green-700">
+                              {getUserInitials()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <div className="flex items-center justify-start gap-2 p-2">
+                          <div className="flex flex-col space-y-1 leading-none">
+                            <p className="font-medium">{getUserDisplayName()}</p>
+                            <p className="text-xs text-gray-500">{user.email}</p>
+                            {isAdmin && (
+                              <p className="text-xs text-green-600 font-medium">Administrator</p>
+                            )}
+                          </div>
+                        </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard" className="cursor-pointer">
+                            <User className="mr-2 h-4 w-4" />
+                            <span>Dashboard</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/profile-settings" className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>Profile Settings</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        {isAdmin && (
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin-dashboard" className="cursor-pointer">
+                              <Shield className="mr-2 h-4 w-4" />
+                              <span>Admin Dashboard</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem asChild>
+                          <Link href="/restaurant-dashboard" className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>Restaurant Dashboard</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Sign out</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <Link href="/auth">
+                      <Button>Sign In</Button>
+                    </Link>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
+      </header>
 
-        {/* Right Side Actions */}
-        <div className="flex items-center gap-2">
-          {/* Mobile Search Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
-          >
-            <Search className="h-5 w-5" />
-            <span className="sr-only">Search</span>
-          </Button>
+      {/* Mobile Menu Overlay */}
+      {isMobile && mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-50" onClick={closeMobileMenu}>
+          <div className="fixed inset-y-0 left-0 w-full bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
+            <div className="flex flex-col h-full">
+              {/* Mobile Menu Header */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <Link href="/" className="text-2xl font-bold text-green-600" onClick={closeMobileMenu}>
+                  Eat Halaal
+                </Link>
+                <Button variant="ghost" size="sm" onClick={closeMobileMenu}>
+                  <X className="h-6 w-6" />
+                </Button>
+              </div>
 
-          {isAuthenticated && user ? (
-            <>
-              {/* Notifications */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
-                      3
-                    </span>
-                    <span className="sr-only">Notifications</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80">
-                  <div className="p-4">
-                    <h4 className="font-semibold mb-2">Notifications</h4>
-                    <div className="space-y-3">
-                      <div className="text-sm">
-                        <p className="font-medium">Welcome back, {user.fullName}!</p>
-                        <p className="text-muted-foreground text-xs">Just now</p>
-                      </div>
-                      <div className="text-sm">
-                        <p className="font-medium">New review on your restaurant</p>
-                        <p className="text-muted-foreground text-xs">2 hours ago</p>
-                      </div>
-                      <div className="text-sm">
-                        <p className="font-medium">Your claim was approved!</p>
-                        <p className="text-muted-foreground text-xs">1 day ago</p>
-                      </div>
-                    </div>
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* User Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="h-4 w-4" />
-                    </div>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{user.fullName}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                    <p className="text-xs text-primary capitalize mt-1">{user.role.replace("_", " ")}</p>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard">
-                      <ChefHat className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  {hasPermission("admin_dashboard") && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin-dashboard">
-                        <Shield className="mr-2 h-4 w-4" />
-                        Admin Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  {hasPermission("restaurant_dashboard") && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/restaurant-dashboard">
-                        <Store className="mr-2 h-4 w-4" />
-                        Restaurant Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem asChild>
-                    <Link href="/my-reviews">
-                      <Star className="mr-2 h-4 w-4" />
-                      My Reviews
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/favorites">
-                      <Heart className="mr-2 h-4 w-4" />
-                      Favorites
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile-settings">
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    className="text-destructive cursor-pointer"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          ) : (
-            <div className="hidden sm:flex items-center gap-2">
-              <Button variant="ghost" asChild>
-                <Link href="/auth">Sign In</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/auth?tab=signup">Sign Up</Link>
-              </Button>
-            </div>
-          )}
-
-          {/* Mobile Menu */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px]">
-              <nav className="flex flex-col gap-4 mt-8">
-                {navLinks.map((link) => (
+              {/* Mobile Menu Items */}
+              <div className="flex-1 flex flex-col justify-center items-center space-y-8 p-8">
+                {navigationItems.map((item) => (
                   <Link
-                    key={link.href}
-                    href={link.href}
-                    className="text-lg font-medium hover:text-primary transition-colors"
+                    key={item.to}
+                    href={item.to}
+                    className="text-2xl font-medium text-gray-900 hover:text-green-600 transition-colors text-center"
+                    onClick={closeMobileMenu}
                   >
-                    {link.label}
+                    {item.label}
                   </Link>
                 ))}
-                {isAuthenticated && user ? (
+                
+                {user && (
                   <>
-                    <hr className="my-4" />
                     <Link
                       href="/dashboard"
-                      className="text-lg font-medium hover:text-primary transition-colors"
+                      className="text-2xl font-medium text-gray-900 hover:text-green-600 transition-colors text-center"
+                      onClick={closeMobileMenu}
                     >
                       Dashboard
                     </Link>
-                    {hasPermission("admin_dashboard") && (
-                      <Link
-                        href="/admin-dashboard"
-                        className="text-lg font-medium hover:text-primary transition-colors"
-                      >
-                        Admin Dashboard
-                      </Link>
-                    )}
                     <Link
-                      href="/favorites"
-                      className="text-lg font-medium hover:text-primary transition-colors"
+                      href="/restaurant-dashboard"
+                      className="text-2xl font-medium text-gray-900 hover:text-green-600 transition-colors text-center"
+                      onClick={closeMobileMenu}
                     >
-                      Favorites
+                      Restaurant Dashboard
                     </Link>
-                    <Link
-                      href="/profile-settings"
-                      className="text-lg font-medium hover:text-primary transition-colors"
-                    >
-                      Settings
-                    </Link>
-                    <Button onClick={handleLogout} variant="destructive" className="mt-2">
-                      Sign Out
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <hr className="my-4" />
-                    <Link
-                      href="/auth"
-                      className="text-lg font-medium hover:text-primary transition-colors"
-                    >
-                      Sign In
-                    </Link>
-                    <Button asChild className="mt-2">
-                      <Link href="/auth?tab=signup">Sign Up</Link>
-                    </Button>
                   </>
                 )}
-              </nav>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
+              </div>
 
-      {/* Mobile Search Bar */}
-      {isSearchOpen && (
-        <div className="border-t p-4 lg:hidden">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search restaurants..."
-              className="pl-10"
-              autoFocus
-            />
+              {/* Mobile Menu Footer */}
+              {user && (
+                <div className="p-4 border-t">
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={userProfile?.avatar_url} alt={getUserDisplayName()} />
+                      <AvatarFallback className="bg-green-100 text-green-700">
+                        {getUserInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{getUserDisplayName()}</p>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      handleSignOut();
+                      closeMobileMenu();
+                    }} 
+                    variant="outline" 
+                    className="w-full"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
-    </header>
+    </>
   );
-}
+};
+
+export default Header;

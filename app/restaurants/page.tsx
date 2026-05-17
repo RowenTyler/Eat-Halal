@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
+import Header from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { RestaurantCard } from "@/components/restaurant/restaurant-card";
 import { FiltersSidebar } from "@/components/restaurant/filters-sidebar";

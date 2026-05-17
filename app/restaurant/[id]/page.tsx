@@ -4,7 +4,7 @@ import { useState } from "react";
 import { use } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
+import Header from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { StarRating } from "@/components/ui/star-rating";
 import { ReviewCard } from "@/components/review/review-card";

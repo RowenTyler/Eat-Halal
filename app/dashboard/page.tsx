@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
+import Header from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { RestaurantCard } from "@/components/restaurant/restaurant-card";

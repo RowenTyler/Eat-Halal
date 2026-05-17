@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Header } from "@/components/layout/header";
+import Header from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Users, Heart, Globe } from "lucide-react";
