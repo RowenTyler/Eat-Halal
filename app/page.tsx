@@ -7,6 +7,7 @@ import { TrendingSection } from "@/components/home/trending-section";
 import { RecentReviews } from "@/components/home/recent-reviews";
 import { MissionSection } from "@/components/home/mission-section";
 import { RestaurantCTA } from "@/components/home/restaurant-cta";
+import BlogGrid from "@/components/home/BlogGrid";
 import { NewsletterSection } from "@/components/home/newsletter-section";
 
 export default function HomePage() {
@@ -21,6 +22,7 @@ export default function HomePage() {
         <RecentReviews />
         <MissionSection />
         <RestaurantCTA />
+        <BlogGrid />
         <NewsletterSection />
       </main>
       <Footer />
